@@ -26,8 +26,7 @@ def fetch_and_sync():
     combined = []
     # 500 रिकॉर्ड्स के लिए 10 पेज तक लूप
     for page in range(1, 11):
-        url = f"https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json](https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json)"
-        try:
+        url = f"[https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json?pageNo=](https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json?pageNo=){page}&pageSize=50"
             r = requests.get(url, headers=headers, timeout=10)
             data = r.json()
             items = data.get("data", {}).get("list", [])
