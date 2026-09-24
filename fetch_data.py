@@ -28,8 +28,9 @@ def fetch_and_sync():
     for page in range(1, 11):
         url = f"https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json?pageNo={page}&pageSize=50"
         try:
-             r = requests.get(url, headers=headers, timeout=10)
+            r = requests.get(url, headers=headers, timeout=10)
             data = r.json()
+            print(r.status_code)
             items = data.get("data", {}).get("list", [])
             if not items:
                 break
