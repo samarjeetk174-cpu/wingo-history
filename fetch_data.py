@@ -1,11 +1,11 @@
 import requests
 import json
 
-# 1. API Endpoint URL (नई रिक्वेस्ट के अनुसार)
-url = "https://api.ar-lottery01.com/api/Lottery/GetTrendStatistics?gameCode=WinGo_1M&pageNo=1&pageSize=10&language=en"
+# 1. API Endpoint URL (पूरे पैरामीटर्स के साथ)
+url = "https://api.ar-lottery01.com/api/Lottery/GetTrendStatistics?gameCode=WinGo_1M&pageNo=1&pageSize=10&language=en&random=867075960099&signature=A1CD2A9F052644D9F0ED929EF6DE&timestamp=1790249652"
 
-# 2. Updated Authorization Token (बिना किसी स्पेस के)
-token = "eyJhbGciOiJlUzI1NiIsInR5cCI6IkpXVCJ9.eyJTYXpvSW4iOiIxNjA2NTkwIiwicm9sZSI6Im5vcm1hbCIsIklEcyI6WyIxMDMwMDIxOTUzNSIsInR5cGUiOjEsImFkIjowLCJpc3MiOiJhdXRoMCIsImV4cCI6MTc5MDI0OTMwNX0.C2rqs6y8wTy-7TNovuE7qKRNtug3ogcsBMGh-EbwU5U"
+# 2. Token
+token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJTYXpvSW4iOiIxNjA2NTkwIiwicm9sZSI6Im5vcm1hbCIsIklEcyI6WyIxMDMwMDIxOTUzNSIsInR5cGUiOjEsImFkIjowLCJpc3MiOiJhdXRoMCIsImV4cCI6MTc5MDI0OTY1Mn0.kxIrk26k0OWbRJ_4hscfWqd4"
 
 # 3. Request Headers
 headers = {
