@@ -1,72 +1,70 @@
 import os
+import json
 import requests
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, db
 
-# Firebase इनिशियलाइज़ेशन (बिना क्रेडेंशियल सीधे प्रोजेक्ट ID से या सर्विस की के जरिए)
-# GitHub Actions Secrets से सर्विस अकाउंट JSON लिया जा सकता है
-import json
-
+# 1. Firebase Realtime Database कनेक्शन सेटअप
 firebase_key = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
-if firebase_key:
-    cred = credentials.Certificate(json.loads(firebase_key))
-    firebase_admin.initialize_app(cred)
-else:
-    # डिफ़ॉल्ट प्रोजेक्ट इनिशियलाइज़
-    firebase_admin.initialize_app(options={"projectId": "wingo-d3f67"})
+database_url = "https://wingo-history-fa620-default-rtdb.firebaseio.com"
 
-db = firestore.client()
+if firebase_key:
+    try:
+        key_dict = json.loads(firebase_key)
+        cred = credentials.Certificate(key_dict)
+    except Exception:
+        cred = credentials.Certificate(firebase_key)
+    firebase_admin.initialize_app(cred, {"databaseURL": database_url})
+else:
+    firebase_admin.initialize_app(options={"databaseURL": database_url})
 
 def fetch_and_sync():
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
     }
     
-    # 1. 500 राउंड्स लाइव डेटा फेच
     combined = []
+    # 500 रिकॉर्ड्स के लिए 10 पेज तक लूप
     for page in range(1, 11):
+        url = f"https://draw.ar-lottery01.com/WinGo/GetHistoryIssuePage.json?pageNo={page}&pageSize=50"
         try:
-            url = f"https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json?pageNo={page}&pageSize=50"
             r = requests.get(url, headers=headers, timeout=10)
             data = r.json()
             items = data.get("data", {}).get("list", [])
-            if items:
-                combined.extend(items)
-            else:
+            if not items:
                 break
+            combined.extend(items)
         except Exception as e:
             print(f"Error on page {page}: {e}")
             break
 
     print(f"Total fetched records: {len(combined)}")
 
-    # 2. Firestore में बैच राइट (Batch Write)
-    batch = db.batch()
-    batch_count = 0
+    if not combined:
+        print("No data to update.")
+        return
+
+    # 2. Realtime Database में 'wingo_history' नोड में डेटा सेव करना
+    ref = db.reference("wingo_history")
+    updates = {}
 
     for item in combined:
         issue = str(item.get("issueNumber"))
-        num = int(item.get("number"))
+        num = int(item.get("number", 0))
+        color = item.get("color", "")
         size = "BIG" if num >= 5 else "SMALL"
 
-        doc_ref = db.collection("wingo_history").document(issue)
-        batch.set(doc_ref, {
+        updates[issue] = {
             "issueNumber": issue,
             "number": num,
+            "color": color,
             "size": size,
-            "status": "RECORDED",
-            "timestamp": firestore.SERVER_TIMESTAMP
-        }, merge=True)
-        
-        batch_count += 1
-        if batch_count >= 400:  # Firestore 500 लिमिट सेफगार्ड
-            batch.commit()
-            batch = db.batch()
-            batch_count = 0
+            "premium": item.get("premium", ""),
+            "status": "RECORDED"
+        }
 
-    if batch_count > 0:
-        batch.commit()
-        
+    # एक साथ बल्क अपडेट
+    ref.update(updates)
     print("Database sync complete!")
 
 if __name__ == "__main__":
