@@ -22,11 +22,12 @@ def fetch_and_sync():
     headers = {
         "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
     }
-    
+
     combined = []
     # 500 रिकॉर्ड्स के लिए 10 पेज तक लूप
     for page in range(1, 11):
-        url = f"[https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json?pageNo=](https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json?pageNo=){page}&pageSize=50"
+        url = f"https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json?pageNo={page}&pageSize=50"
+        try:
             r = requests.get(url, headers=headers, timeout=10)
             data = r.json()
             items = data.get("data", {}).get("list", [])
@@ -58,7 +59,6 @@ def fetch_and_sync():
             "number": num,
             "color": color,
             "size": size,
-            "premium": item.get("premium", ""),
             "status": "RECORDED"
         }
 
